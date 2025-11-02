@@ -2,6 +2,20 @@
 
 A complete, production-ready GPS tracking web application with user authentication, float plans, weather integration, and secure API endpoints designed for maritime navigation.
 
+## 📖 Background
+
+I built this using the **Warp AI terminal**. I needed a way for my family to be able to keep track of me when underway. We use [Bareboat Necessities](https://bareboat-necessities.github.io/) running on a Raspberry Pi 5 on the boat and use SignalK to transmit the GPS data back to the boat-tracker. 
+
+It started out as just a tracker and I realized pretty quickly that some other features would be useful. So, I added:
+
+- 🌤️ **Weather and radar** that updates based on GPS location every 15 minutes
+- ⛵ **Boat information page** with vessel specs and photos
+- 🗺️ **Track management** - ability to lay tracks where I've been
+- 📍 **Waypoint and route uploads** for navigation planning
+- 📋 **Float plan page** for detailed trip planning
+
+Now my wife is very happy and feeling much more secure while I'm away. I hope this helps you as well!
+
 ## ✨ Features
 
 - **🔐 Secure Authentication** - User management with role-based access

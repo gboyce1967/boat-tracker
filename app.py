@@ -171,6 +171,18 @@ def init_db():
             )
         ''')
         
+        # Boat custom fields table (separate rows per field for proper relational storage)
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS boat_custom_fields (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                field_name TEXT NOT NULL,
+                field_value TEXT,
+                field_order INTEGER DEFAULT 0,
+                updated_by INTEGER,
+                FOREIGN KEY (updated_by) REFERENCES users(id)
+            )
+        ''')
+        
         # Float plan table
         db.execute('''
             CREATE TABLE IF NOT EXISTS float_plans (
@@ -229,6 +241,7 @@ def init_db():
         db.execute('CREATE INDEX IF NOT EXISTS idx_weather_timestamp ON weather_data(timestamp)')
         db.execute('CREATE INDEX IF NOT EXISTS idx_plan_id ON float_plan_legs(plan_id)')
         db.execute('CREATE INDEX IF NOT EXISTS idx_leg_order ON float_plan_legs(leg_order)')
+        db.execute('CREATE INDEX IF NOT EXISTS idx_custom_field_order ON boat_custom_fields(field_order)')
         
         # Create default admin user if no users exist
         cursor = db.execute('SELECT COUNT(*) as count FROM users')
@@ -1517,6 +1530,33 @@ SETTINGS_TEMPLATE = '''
                             <input type="text" name="engine_serial_number" value="{{ boat['engine_serial_number'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         </div>
                     </div>
+                    
+                    <!-- Custom Fields Section -->
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #dee2e6;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <label style="font-weight: 600; font-size: 16px; color: #333;">Custom Fields</label>
+                            <button type="button" onclick="addCustomField()" style="background: #17a2b8; color: white; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 13px;">+ Add Field</button>
+                        </div>
+                        <div id="custom-fields-container">
+                            {% if custom_fields %}
+                            {% for field in custom_fields %}
+                            <div class="custom-field-row" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; margin-bottom: 10px; align-items: end;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 13px;">Field Name:</label>
+                                    <input type="text" name="custom_field_name" value="{{ field['field_name'] }}" placeholder="e.g. VHF Radio Model" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 13px;">Value:</label>
+                                    <input type="text" name="custom_field_value" value="{{ field['field_value'] or '' }}" placeholder="e.g. Standard Horizon GX1400" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                </div>
+                                <button type="button" onclick="removeCustomField(this)" style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; height: 38px;" title="Remove field">✕</button>
+                            </div>
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+                        <div style="font-size: 12px; color: #666; margin-top: 5px;">Add any custom information fields for your boat (e.g. radio model, EPIRB serial, life raft info)</div>
+                    </div>
+                    
                     <div style="display: flex; gap: 10px; margin-top: 15px;">
                         <button type="submit" style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Save Boat Info</button>
                         <button type="button" onclick="toggleBoatForm()" style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Cancel</button>
@@ -1648,6 +1688,33 @@ SETTINGS_TEMPLATE = '''
                 form.style.display = 'none';
                 toggle.textContent = 'Edit Boat Info';
                 toggle.style.background = '#007bff';
+            }
+        }
+        
+        function addCustomField(name, value) {
+            const container = document.getElementById('custom-fields-container');
+            const row = document.createElement('div');
+            row.className = 'custom-field-row';
+            row.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; margin-bottom: 10px; align-items: end;';
+            row.innerHTML = `
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 13px;">Field Name:</label>
+                    <input type="text" name="custom_field_name" value="${name || ''}" placeholder="e.g. VHF Radio Model" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 13px;">Value:</label>
+                    <input type="text" name="custom_field_value" value="${value || ''}" placeholder="e.g. Standard Horizon GX1400" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <button type="button" onclick="removeCustomField(this)" style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; height: 38px;" title="Remove field">✕</button>
+            `;
+            container.appendChild(row);
+            // Focus the new field name input
+            row.querySelector('input[name="custom_field_name"]').focus();
+        }
+        
+        function removeCustomField(btn) {
+            if (confirm('Remove this custom field?')) {
+                btn.closest('.custom-field-row').remove();
             }
         }
     </script>
@@ -2091,6 +2158,14 @@ BOAT_INFO_TEMPLATE = '''
                     <div class="info-label">Engine Serial Number</div>
                     <div class="info-value">{{ boat.engine_serial or 'N/A' }}</div>
                 </div>
+                {% if custom_fields %}
+                {% for field in custom_fields %}
+                <div class="info-item" style="border-left-color: #17a2b8;">
+                    <div class="info-label">{{ field.field_name }}</div>
+                    <div class="info-value">{{ field.field_value or 'N/A' }}</div>
+                </div>
+                {% endfor %}
+                {% endif %}
             </div>
             <div class="updated-info">
                 Last updated: {{ boat.updated_at[:19] if boat.updated_at else 'Unknown' }}
@@ -2492,7 +2567,7 @@ FLOAT_PLAN_TEMPLATE = '''
             const legData = {};
             for (let [key, value] of formData.entries()) {
                 if (key.startsWith('legs[')) {
-                    const match = key.match(/legs\[(\d+)\]\[([^\]]+)\]/);
+                    const match = key.match(/legs\\[(\\d+)\\]\\[([^\\]]+)\\]/);
                     if (match) {
                         const legId = match[1];
                         const field = match[2];
@@ -2862,13 +2937,18 @@ def settings():
     cursor = db.execute('SELECT * FROM boat_info ORDER BY updated_at DESC LIMIT 1')
     boat = cursor.fetchone()
     
+    # Get custom fields for boat edit form
+    cursor = db.execute('SELECT * FROM boat_custom_fields ORDER BY field_order ASC')
+    custom_fields = cursor.fetchall()
+    
     return render_template_string(
         SETTINGS_TEMPLATE,
         current_user=current_user,
         api_key=api_key,
         stats=stats,
         server_time=server_time,
-        boat=boat
+        boat=boat,
+        custom_fields=custom_fields
     )
 
 @app.route('/weather')
@@ -2920,10 +3000,15 @@ def boat_info():
     cursor = db.execute('SELECT * FROM boat_info ORDER BY updated_at DESC LIMIT 1')
     boat = cursor.fetchone()
     
+    # Get custom fields
+    cursor = db.execute('SELECT * FROM boat_custom_fields ORDER BY field_order ASC')
+    custom_fields = cursor.fetchall()
+    
     return render_template_string(
         BOAT_INFO_TEMPLATE,
         current_user=current_user,
-        boat=boat
+        boat=boat,
+        custom_fields=custom_fields
     )
 
 @app.route('/update_boat_info', methods=['POST'])
@@ -3001,6 +3086,21 @@ def update_boat_info():
             datetime.now().isoformat(),
             session['user_id']
         ))
+        
+        # Handle custom fields
+        custom_field_names = request.form.getlist('custom_field_name')
+        custom_field_values = request.form.getlist('custom_field_value')
+        
+        # Clear existing custom fields and re-insert
+        db.execute('DELETE FROM boat_custom_fields')
+        
+        for i, (fname, fvalue) in enumerate(zip(custom_field_names, custom_field_values)):
+            fname = fname.strip()
+            if fname:  # Only save fields that have a name
+                db.execute('''
+                    INSERT INTO boat_custom_fields (field_name, field_value, field_order, updated_by)
+                    VALUES (?, ?, ?, ?)
+                ''', (fname, fvalue.strip() if fvalue else None, i, session['user_id']))
         
         db.commit()
         flash('Boat information updated successfully', 'success')

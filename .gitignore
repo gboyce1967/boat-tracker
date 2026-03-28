@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+
+# Runtime data
+*.db
+*.db-journal
+
+# Uploaded files
+static/boat_images/
+
+# Backups
+backups/
+*.backup-*
+
+# Config (contains secrets)
+config.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+notes/gps_tracker.db.backup

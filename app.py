@@ -261,6 +261,12 @@ def init_db():
         
         db.commit()
 
+# Run schema initialization at module load time.
+# All statements are idempotent (CREATE IF NOT EXISTS), so this is safe
+# to run on every startup. This ensures new tables/indexes are created
+# even when running under gunicorn (which doesn't trigger __main__).
+init_db()
+
 def require_login(f):
     """Decorator to require login for routes"""
     def decorated_function(*args, **kwargs):

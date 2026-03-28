@@ -1513,27 +1513,27 @@ SETTINGS_TEMPLATE = '''
                         </div>
                         <div style="margin-bottom: 10px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 500;">Length (ft):</label>
-                            <input type="text" name="length_ft" value="{{ boat['length'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" name="length_ft" value="{{ boat['length'] if boat and boat['length'] is not none else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         </div>
                         <div style="margin-bottom: 10px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 500;">Draft (ft):</label>
-                            <input type="text" name="draft_ft" value="{{ boat['draft'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" name="draft_ft" value="{{ boat['draft'] if boat and boat['draft'] is not none else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         </div>
                         <div style="margin-bottom: 10px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 500;">Beam (ft):</label>
-                            <input type="text" name="beam_ft" value="{{ boat['beam'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" name="beam_ft" value="{{ boat['beam'] if boat and boat['beam'] is not none else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         </div>
                         <div style="margin-bottom: 10px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 500;">Fuel Tank Size (gal):</label>
-                            <input type="text" name="fuel_tank_size_gal" value="{{ boat['fuel_tank_size'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" name="fuel_tank_size_gal" value="{{ boat['fuel_tank_size'] if boat and boat['fuel_tank_size'] is not none else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         </div>
                         <div style="margin-bottom: 10px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 500;">Engine Size (hp):</label>
-                            <input type="text" name="engine_size_hp" value="{{ boat['engine_size'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" name="engine_size_hp" value="{{ boat['engine_size'] if boat and boat['engine_size'] is not none else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         </div>
                         <div style="margin-bottom: 10px; grid-column: span 2;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 500;">Engine Serial Number:</label>
-                            <input type="text" name="engine_serial_number" value="{{ boat['engine_serial'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" name="engine_serial_number" value="{{ boat['engine_serial'] if boat and boat['engine_serial'] is not none else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         </div>
                     </div>
                     
@@ -3023,6 +3023,21 @@ def update_boat_info():
     """Update boat information"""
     db = get_db()
     
+    # Helper to safely convert form values (handles empty strings, 'None', whitespace)
+    def safe_float(val):
+        try:
+            val = val.strip() if val else ''
+            return float(val) if val and val.lower() != 'none' else None
+        except (ValueError, AttributeError):
+            return None
+    
+    def safe_int(val):
+        try:
+            val = val.strip() if val else ''
+            return int(float(val)) if val and val.lower() != 'none' else None
+        except (ValueError, AttributeError):
+            return None
+    
     # Get form data
     registration_number = request.form.get('registration_number', '').strip()[:8]
     length = request.form.get('length_ft', '')
@@ -3078,16 +3093,16 @@ def update_boat_info():
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             registration_number or None,
-            float(length) if length else None,
-            float(draft) if draft else None,
-            float(beam) if beam else None,
-            float(fuel_tank_size) if fuel_tank_size else None,
+            safe_float(length),
+            safe_float(draft),
+            safe_float(beam),
+            safe_float(fuel_tank_size),
             engine_size or None,
             engine_serial or None,
             bin_number or None,
             color or None,
             model or None,
-            int(year) if year else None,
+            safe_int(year),
             boat_image_filename,
             datetime.now().isoformat(),
             session['user_id']

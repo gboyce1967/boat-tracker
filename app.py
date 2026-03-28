@@ -1513,27 +1513,27 @@ SETTINGS_TEMPLATE = '''
                         </div>
                         <div style="margin-bottom: 10px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 500;">Length (ft):</label>
-                            <input type="text" name="length_ft" value="{{ boat['length_ft'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" name="length_ft" value="{{ boat['length'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         </div>
                         <div style="margin-bottom: 10px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 500;">Draft (ft):</label>
-                            <input type="text" name="draft_ft" value="{{ boat['draft_ft'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" name="draft_ft" value="{{ boat['draft'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         </div>
                         <div style="margin-bottom: 10px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 500;">Beam (ft):</label>
-                            <input type="text" name="beam_ft" value="{{ boat['beam_ft'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" name="beam_ft" value="{{ boat['beam'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         </div>
                         <div style="margin-bottom: 10px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 500;">Fuel Tank Size (gal):</label>
-                            <input type="text" name="fuel_tank_size_gal" value="{{ boat['fuel_tank_size_gal'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" name="fuel_tank_size_gal" value="{{ boat['fuel_tank_size'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         </div>
                         <div style="margin-bottom: 10px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 500;">Engine Size (hp):</label>
-                            <input type="text" name="engine_size_hp" value="{{ boat['engine_size_hp'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" name="engine_size_hp" value="{{ boat['engine_size'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         </div>
                         <div style="margin-bottom: 10px; grid-column: span 2;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 500;">Engine Serial Number:</label>
-                            <input type="text" name="engine_serial_number" value="{{ boat['engine_serial_number'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" name="engine_serial_number" value="{{ boat['engine_serial'] if boat else '' }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         </div>
                     </div>
                     

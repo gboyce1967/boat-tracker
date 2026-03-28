@@ -1,6 +1,45 @@
 # 🛡️ GPS Tracker Deployment Package - Changelog
 
-## Latest Version (2025-10-27)
+## Latest Version (2026-03-28)
+
+### ✨ **New Features**
+
+#### 🔧 **Custom Fields for Boat Information**
+- **Freeform Custom Fields** - Add unlimited custom name/value fields to boat info
+- **Proper Relational Storage** - New `boat_custom_fields` table (not JSON in a TEXT column)
+- **Dynamic UI** - Add/remove custom fields on the fly in Settings
+- **Display Integration** - Custom fields shown on Boat Info page with teal accent
+
+#### 🚀 **Git-Based Deployment Pipeline**
+- **Production server** (192.168.101.12) now uses git pull for updates
+- **`update.sh`** script: backs up DB, pulls from GitHub, restarts service, health check
+- **`.gitignore`** keeps runtime files (db, venv, uploads) out of the repo
+- **One-command deploy**: `ssh root@192.168.101.12 '/var/www/gps-tracker-secure/update.sh'`
+
+### 🐛 **Bug Fixes**
+
+#### **init_db() Not Running Under Gunicorn**
+- `init_db()` was only called in `__main__`, which gunicorn never triggers
+- Moved to module load time so new tables are always created on restart
+- All statements are idempotent (`CREATE IF NOT EXISTS`) — safe to run every startup
+
+#### **Boat Info Form Losing Values on Save**
+- Form `value` attributes used wrong column names (e.g. `boat['length_ft']` vs actual DB column `boat['length']`)
+- Fields with mismatched names rendered empty, so saving overwrote real data with blanks
+- Fixed all 6 affected fields: length, draft, beam, fuel_tank_size, engine_size, engine_serial
+
+#### **"Error updating boat information" on Save**
+- `float('None')` crash when DB stored `None` and Jinja rendered it as the literal string `"None"`
+- Added `safe_float()` and `safe_int()` helpers that handle empty strings, `'None'`, and invalid input
+- Template values now use `is not none` checks to render empty string instead of `"None"`
+
+#### **Python 3.12+ SyntaxWarning**
+- Fixed invalid escape sequence `\[` in Float Plan template JS regex
+- Double-escaped backslashes so Python interprets them correctly
+
+---
+
+## Version 2025-10-27
 
 ### ✨ **New Features Added**
 
